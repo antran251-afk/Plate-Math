@@ -1,0 +1,1144 @@
+<meta charset="utf-8">
+<title>Plate Math</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,700..800&family=Oswald:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* ---------- tokens: light is the base, both dark paths redefine only tokens ---------- */
+:root{
+  --ground:#E7EAEE;
+  --surface:#FFFFFF;
+  --surface-2:#F1F3F6;
+  --ink:#13171C;
+  --ink-2:#535A65;
+  --ink-3:#88909C;
+  --line:#D2D7DE;
+  --line-strong:#B6BDC7;
+  --frame:#1C2127;
+  --frame-2:#333A42;
+  --signal:#C4362F;
+  --stamp:rgba(255,255,255,.72);
+  --kb46:#5A616A;
+  --kb55:#3E444B;
+  --kb60:#23272D;
+  --pl45:#1D5FA8;
+  --pl35:#BE9106;
+  --pl25:#1F7A4C;
+  --pl10:#98A1AC;
+  --pl5:#B0342E;
+  --shadow:0 1px 2px rgba(19,23,28,.06), 0 8px 24px -16px rgba(19,23,28,.28);
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --disp:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --num:"Oswald","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1216;
+    --surface:#181C22;
+    --surface-2:#20252C;
+    --ink:#EBEEF2;
+    --ink-2:#9BA3AF;
+    --ink-3:#6B7480;
+    --line:#2C323A;
+    --line-strong:#3D444D;
+    --frame:#AAB2BD;
+    --frame-2:#868F9B;
+    --signal:#DC5C55;
+    --stamp:rgba(255,255,255,.78);
+    --kb46:#8B939E;
+    --kb55:#6A737E;
+    --kb60:#4A535D;
+    --pl45:#3C82C9;
+    --pl35:#D2A61E;
+    --pl25:#2E9862;
+    --pl10:#7C8592;
+    --pl5:#C9504A;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1216;
+  --surface:#181C22;
+  --surface-2:#20252C;
+  --ink:#EBEEF2;
+  --ink-2:#9BA3AF;
+  --ink-3:#6B7480;
+  --line:#2C323A;
+  --line-strong:#3D444D;
+  --frame:#AAB2BD;
+  --frame-2:#868F9B;
+  --signal:#DC5C55;
+  --stamp:rgba(255,255,255,.78);
+  --kb46:#8B939E;
+  --kb55:#6A737E;
+  --kb60:#4A535D;
+  --pl45:#3C82C9;
+  --pl35:#D2A61E;
+  --pl25:#2E9862;
+  --pl10:#7C8592;
+  --pl5:#C9504A;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:2px}
+
+.wrap{
+  max-width:620px;
+  margin:0 auto;
+  padding:28px 18px 56px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+/* ---------- header ---------- */
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand h1{
+  margin:0;
+  font-family:var(--disp);
+  font-variation-settings:"wdth" 118,"wght" 800;
+  font-size:27px;
+  letter-spacing:-.015em;
+  line-height:1;
+  text-transform:uppercase;
+}
+.brand p{
+  margin:0;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+}
+
+/* ---------- shared: segmented switch ---------- */
+.seg{
+  display:inline-flex;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:2px;
+  gap:2px;
+}
+.seg button{
+  padding:6px 12px;
+  border-radius:2px;
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-2);
+  white-space:nowrap;
+}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.seg.wide{display:flex}
+.seg.wide button{flex:1;padding:11px 12px;font-size:12px;letter-spacing:.1em}
+
+/* ---------- cards ---------- */
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:4px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--line);
+}
+.card-head h2{
+  margin:0;
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:500;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+}
+.card-body{padding:16px}
+.linkbtn{
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  border-bottom:1px solid transparent;
+  padding-bottom:1px;
+}
+.linkbtn:hover{color:var(--signal);border-bottom-color:var(--signal)}
+
+/* ---------- readout ---------- */
+.readout{padding:22px 20px 18px;display:flex;flex-direction:column;gap:8px}
+.total{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  font-family:var(--num);
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.005em;
+  line-height:.9;
+}
+.total .num{font-size:clamp(72px,21vw,116px)}
+.total .unit{
+  font-family:var(--mono);
+  font-size:15px;
+  font-weight:500;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  transform:translateY(-6px);
+}
+.breakdown{
+  font-family:var(--mono);
+  font-size:11.5px;
+  color:var(--ink-2);
+  border-top:1px solid var(--line);
+  padding-top:10px;
+  font-variant-numeric:tabular-nums;
+}
+.breakdown .sep{color:var(--ink-3);padding:0 6px}
+
+/* ---------- kettlebell drawing ---------- */
+.stage{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--surface-2);
+  border-bottom:1px solid var(--line);
+  padding:18px 16px;
+  min-height:212px;
+}
+.kb-svg{width:240px;height:auto;display:block}
+.kb-plate{cursor:pointer}
+.kb-plate rect{transition:transform .12s ease}
+@media (prefers-reduced-motion:reduce){.kb-plate rect{transition:none}}
+.kb-plate:hover rect.body{transform:translateX(5px)}
+.kb-hint{
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.06em;
+  color:var(--ink-3);
+  text-align:center;
+  padding:9px 16px;
+  border-bottom:1px solid var(--line);
+  background:var(--surface);
+}
+
+/* ---------- barbell drawing ---------- */
+.bar-stage{
+  display:flex;
+  align-items:center;
+  /* "safe" so a heavily loaded bar stays scrollable to both ends */
+  justify-content:center;
+  justify-content:safe center;
+  gap:0;
+  height:168px;
+  overflow-x:auto;
+  padding:0 10px;
+}
+.bar-side{display:flex;align-items:center;gap:2px}
+.bar-side.left{justify-content:flex-end}
+.bb-plate{
+  border-radius:2px;
+  border:1px solid rgba(0,0,0,.28);
+  cursor:pointer;
+  flex:none;
+  position:relative;
+  transition:transform .12s ease;
+}
+@media (prefers-reduced-motion:reduce){.bb-plate{transition:none}}
+.bar-side.left .bb-plate:hover{transform:translateX(-4px)}
+.bar-side.right .bb-plate:hover{transform:translateX(4px)}
+.bb-sleeve{width:26px;height:20px;background:var(--frame-2);border-radius:2px;flex:none}
+.bb-tip{width:11px;height:15px;background:var(--frame-2);border-radius:2px;flex:none}
+.bb-shaft{
+  width:88px;height:9px;flex:none;
+  background:repeating-linear-gradient(90deg,var(--frame) 0 3px,var(--frame-2) 3px 5px);
+  border-radius:1px;
+}
+.bar-empty{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--ink-3);
+}
+
+/* ---------- steppers ---------- */
+.rows{display:flex;flex-direction:column;gap:9px}
+.row{
+  display:flex;align-items:center;gap:12px;
+  padding:9px 11px;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:3px;
+}
+.chip{width:11px;flex:none;border-radius:2px;border:1px solid rgba(0,0,0,.25)}
+.row-label{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.row-label .w{
+  font-family:var(--num);
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+  font-size:19px;line-height:1.15;letter-spacing:.01em;
+}
+.row-label .sub{
+  font-family:var(--mono);font-size:10px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.stepper{display:flex;align-items:center;gap:2px;flex:none}
+.stepper button{
+  width:32px;height:32px;
+  display:grid;place-items:center;
+  border:1px solid var(--line-strong);
+  border-radius:3px;
+  background:var(--surface);
+  font-size:17px;line-height:1;color:var(--ink-2);
+}
+.stepper button:hover:not(:disabled){background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.stepper button:disabled{opacity:.32;cursor:not-allowed}
+.stepper .count{
+  min-width:38px;text-align:center;
+  font-family:var(--num);
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+  font-size:21px;
+}
+.stepper .count.zero{color:var(--ink-3)}
+
+/* ---------- bar picker ---------- */
+.barpick{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.barpick .custom{display:flex;align-items:center;gap:9px}
+.barpick label{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+input[type="number"],input[type="text"]{
+  width:92px;padding:8px 10px;
+  background:var(--surface-2);
+  border:1px solid var(--line-strong);
+  border-radius:3px;
+  color:var(--ink);
+  font-family:var(--mono);font-size:13px;
+  font-variant-numeric:tabular-nums;
+}
+input[type="number"]:focus,input[type="text"]:focus{outline:2px solid var(--ink);outline-offset:1px}
+
+/* ---------- weight grid ---------- */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(74px,1fr));
+  gap:6px;
+}
+.grid button{
+  padding:8px 4px;
+  border:1px solid var(--line);
+  border-radius:3px;
+  background:var(--surface-2);
+  font-family:var(--num);
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+  font-size:16px;
+  letter-spacing:.01em;
+  color:var(--ink-2);
+}
+.grid button:hover{border-color:var(--ink);color:var(--ink)}
+.grid button[aria-current="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* ---------- solver ---------- */
+.solver{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.solver input{width:112px}
+.btn{
+  padding:9px 15px;
+  border:1px solid var(--ink);
+  border-radius:3px;
+  background:var(--ink);
+  color:var(--surface);
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:.09em;text-transform:uppercase;
+}
+.btn:hover{opacity:.86}
+.solve-out{
+  margin-top:13px;padding-top:13px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;
+}
+.solve-out strong{color:var(--ink);font-weight:500}
+.solve-out .load{color:var(--ink);font-size:13px}
+
+/* ---------- workout ---------- */
+.progress{height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:4px}
+.progress span{display:block;height:100%;width:0;background:var(--ink);border-radius:2px;transition:width .25s ease}
+@media (prefers-reduced-motion:reduce){.progress span{transition:none}}
+
+.wo-list{list-style:none;margin:0;padding:0}
+.wo-item{
+  display:flex;align-items:center;gap:13px;
+  padding:14px 16px;
+  border-top:1px solid var(--line);
+  cursor:pointer;
+}
+.wo-list li:first-child{border-top:none}
+.wo-item:hover{background:var(--surface-2)}
+.box{
+  width:22px;height:22px;flex:none;
+  border:1.5px solid var(--line-strong);
+  border-radius:3px;
+  display:grid;place-items:center;
+  transition:background .12s ease,border-color .12s ease;
+}
+.box svg{
+  width:13px;height:13px;
+  fill:none;stroke:var(--surface);stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round;
+  opacity:0;transition:opacity .12s ease;
+}
+@media (prefers-reduced-motion:reduce){.box,.box svg{transition:none}}
+.wo-item.done .box{background:var(--ink);border-color:var(--ink)}
+.wo-item.done .box svg{opacity:1}
+.wo-name{flex:1;min-width:0;word-break:break-word}
+.wo-item.done .wo-name{color:var(--ink-3);text-decoration:line-through}
+.x{
+  flex:none;width:28px;height:28px;
+  display:grid;place-items:center;
+  font-size:19px;line-height:1;color:var(--ink-3);border-radius:3px;
+}
+.x:hover{background:var(--line);color:var(--signal)}
+.wo-empty{
+  padding:20px 16px;margin:0;
+  font-family:var(--mono);font-size:11.5px;line-height:1.7;
+  color:var(--ink-3);text-align:center;
+}
+
+.addrow{display:flex;gap:9px}
+.addrow input{flex:1;min-width:0}
+.lib-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.lib-chip{
+  display:inline-flex;align-items:stretch;
+  border:1px solid var(--line);
+  border-radius:3px;
+  background:var(--surface-2);
+  overflow:hidden;
+}
+.lib-chip .pick{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 11px;font-size:13.5px;color:var(--ink-2);
+}
+.lib-chip .pick .mark{
+  font-family:var(--mono);font-size:12px;
+  color:var(--ink-3);width:9px;text-align:center;
+}
+.lib-chip:hover{border-color:var(--line-strong)}
+.lib-chip.in{background:var(--ink);border-color:var(--ink)}
+.lib-chip.in .pick,.lib-chip.in .pick .mark{color:var(--surface)}
+.lib-chip .del{
+  padding:0 9px;font-size:15px;line-height:1;
+  color:var(--ink-3);border-left:1px solid var(--line);
+}
+.lib-chip.in .del{border-left-color:var(--line-strong);color:var(--surface)}
+.lib-chip .del:hover{color:var(--signal)}
+
+/* ---------- footer ---------- */
+.spec{
+  font-family:var(--mono);font-size:10.5px;line-height:1.8;
+  color:var(--ink-3);letter-spacing:.03em;
+  padding:0 2px;
+}
+.spec b{color:var(--ink-2);font-weight:400}
+
+.hidden{display:none !important}
+</style>
+
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      <h1>Plate Math</h1>
+      <p>Load it. Read it.</p>
+    </div>
+    <div class="seg" id="unit-seg" role="group" aria-label="Units">
+      <button type="button" id="u-lb" aria-pressed="true">lb</button>
+      <button type="button" id="u-kg" aria-pressed="false">kg</button>
+    </div>
+  </div>
+
+  <div class="seg wide" role="group" aria-label="Equipment">
+    <button type="button" id="m-kb" aria-pressed="true">Kettlebell</button>
+    <button type="button" id="m-bb" aria-pressed="false">Barbell</button>
+    <button type="button" id="m-wo" aria-pressed="false">Workout</button>
+  </div>
+
+  <div class="card">
+    <div class="readout">
+      <div class="total">
+        <span class="num" id="total">7.8</span>
+        <span class="unit" id="total-unit">lb</span>
+      </div>
+      <div class="breakdown" id="breakdown"></div>
+      <div class="progress hidden" id="progress"><span></span></div>
+    </div>
+  </div>
+
+  <!-- ============ KETTLEBELL ============ -->
+  <div id="pane-kb">
+    <div class="card" style="margin-bottom:16px">
+      <div class="stage">
+        <svg class="kb-svg" viewBox="0 0 240 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Adjustable kettlebell with mounted plates">
+          <path d="M66 140 L66 92 Q66 42 120 42 Q174 42 174 92 L174 140"
+                style="fill:none;stroke:var(--frame)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="111" y="144" width="18" height="118" rx="2" style="fill:var(--frame-2)"/>
+          <rect x="56" y="133" width="128" height="12" rx="3" style="fill:var(--frame)"/>
+          <rect x="94" y="119" width="52" height="16" rx="4" style="fill:var(--signal)"/>
+          <g id="kb-stack"></g>
+          <rect x="52" y="258" width="136" height="14" rx="4" style="fill:var(--frame)"/>
+          <ellipse cx="120" cy="273" rx="70" ry="12" style="fill:var(--frame)"/>
+        </svg>
+      </div>
+      <div class="kb-hint" id="kb-hint">Tap a plate to take it off</div>
+      <div class="card-head">
+        <h2>Plates on hand</h2>
+        <button type="button" class="linkbtn" id="kb-reset">Strip it</button>
+      </div>
+      <div class="card-body">
+        <div class="rows" id="kb-rows"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Every weight it makes &mdash; 27 settings</h2></div>
+      <div class="card-body">
+        <div class="grid" id="kb-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BARBELL ============ -->
+  <div id="pane-bb" class="hidden">
+    <div class="card" style="margin-bottom:16px">
+      <div class="stage">
+        <div class="bar-stage" id="bar-stage"></div>
+      </div>
+      <div class="kb-hint" id="bb-hint">Tap a plate to pull the pair</div>
+      <div class="card-head">
+        <h2>The bar</h2>
+        <button type="button" class="linkbtn" id="bb-reset">Strip it</button>
+      </div>
+      <div class="card-body">
+        <div class="barpick">
+          <div class="seg wide" role="group" aria-label="Bar type">
+            <button type="button" id="b-oly" aria-pressed="true">Olympic 45</button>
+            <button type="button" id="b-wom" aria-pressed="false">Women's 35</button>
+            <button type="button" id="b-trap" aria-pressed="false">Trap</button>
+          </div>
+          <div class="custom hidden" id="trap-row">
+            <label for="trap-w">Trap bar weighs</label>
+            <input type="number" id="trap-w" min="20" max="120" step="0.5" value="45">
+            <span class="bar-empty" id="trap-unit">lb</span>
+          </div>
+        </div>
+        <div class="rows" id="bb-rows"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Hit a number</h2></div>
+      <div class="card-body">
+        <div class="solver">
+          <input type="number" id="target" placeholder="225" step="1" aria-label="Target weight">
+          <span class="bar-empty" id="target-unit">lb</span>
+          <button type="button" class="btn" id="solve">Load it</button>
+        </div>
+        <div class="solve-out" id="solve-out">Type a weight and I&rsquo;ll work out the plates.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ WORKOUT ============ -->
+  <div id="pane-wo" class="hidden">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head">
+        <h2>Today&rsquo;s workout</h2>
+        <button type="button" class="linkbtn" id="wo-reset">Clear checks</button>
+      </div>
+      <ul class="wo-list" id="wo-list"></ul>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Exercise library</h2></div>
+      <div class="card-body">
+        <div class="addrow">
+          <input type="text" id="ex-new" maxlength="60" placeholder="Add an exercise&hellip;" aria-label="New exercise name">
+          <button type="button" class="btn" id="ex-add">Add</button>
+        </div>
+        <div class="lib-list" id="lib-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec" id="spec"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LB_PER_KG = 0.45359237;
+
+  // Kettlebell: weights in tenths of a pound so the sums stay exact.
+  var KB_FRAME = 78;                    // 7.8 lb steel frame
+  var KB_SIZES = [46, 55, 60];          // 4.6 / 5.5 / 6.0 lb, two of each
+  var KB_THICK = {46:15, 55:17, 60:19}; // drawn thickness, heavier = thicker
+  var KB_FILL  = {46:"var(--kb46)", 55:"var(--kb55)", 60:"var(--kb60)"};
+
+  // Barbell: whole pounds.
+  var BB_SIZES = [45, 35, 25, 10, 5];
+  var BB_FILL  = {45:"var(--pl45)", 35:"var(--pl35)", 25:"var(--pl25)", 10:"var(--pl10)", 5:"var(--pl5)"};
+  var BB_DIA   = {45:132, 35:118, 25:100, 10:76, 5:56};
+  var BB_THICK = {45:22, 35:18, 25:15, 10:11, 5:8};
+  var BARS = {oly:{lb:450, name:"Olympic bar"}, wom:{lb:350, name:"Women's bar"}, trap:{lb:450, name:"Trap bar"}};
+
+  var DEFAULT_LIB = ["Kettlebell Swing","Goblet Squat","Single-Arm Row","Overhead Press",
+                     "Romanian Deadlift","Reverse Lunge","Halo","Russian Twist",
+                     "Turkish Get-Up","Farmer's Carry"];
+
+  var S = {
+    mode:"kb", unit:"lb",
+    lib:[], wo:[], done:{}, doneDate:"", nextId:1,
+    kb:{46:0, 55:0, 60:0},
+    bar:"oly", trap:450,
+    bb:{45:0, 35:0, 25:0, 10:0, 5:0}
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  function esc(str){
+    return String(str).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  // Local calendar date. The checklist is a daily thing, so completion is
+  // scoped to a date and wipes itself once that date changes.
+  function today(){
+    var d = new Date();
+    return d.getFullYear() + "-" +
+           ("0" + (d.getMonth() + 1)).slice(-2) + "-" +
+           ("0" + d.getDate()).slice(-2);
+  }
+  function rollDay(){
+    var t = today();
+    if(S.doneDate !== t){ S.done = {}; S.doneDate = t; }
+  }
+  function seedLib(){
+    DEFAULT_LIB.forEach(function(name){ S.lib.push({id:S.nextId++, name:name}); });
+  }
+  function exById(id){
+    return S.lib.filter(function(e){ return e.id === id; })[0];
+  }
+  function doneCount(){
+    var n = 0;
+    S.wo.forEach(function(id){ if(S.done[id]) n++; });
+    return n;
+  }
+
+  /* ---------- numbers ---------- */
+  function fmt(tenths){
+    if(S.unit === "kg"){ return (tenths / 10 * LB_PER_KG).toFixed(1); }
+    return (tenths % 10 === 0) ? String(tenths / 10) : (tenths / 10).toFixed(1);
+  }
+  function unitLabel(){ return S.unit; }
+  function toTenths(displayValue){
+    var v = parseFloat(displayValue);
+    if(!isFinite(v)) return null;
+    if(S.unit === "kg") v = v / LB_PER_KG;
+    return Math.round(v * 10);
+  }
+
+  function barTenths(){ return S.bar === "trap" ? S.trap : BARS[S.bar].lb; }
+  function kbTenths(){
+    return KB_FRAME + KB_SIZES.reduce(function(sum, w){ return sum + w * S.kb[w]; }, 0);
+  }
+  function bbPerSide(){
+    return BB_SIZES.reduce(function(sum, w){ return sum + w * 10 * S.bb[w]; }, 0);
+  }
+  function bbTenths(){ return barTenths() + 2 * bbPerSide(); }
+  function currentTenths(){ return S.mode === "kb" ? kbTenths() : bbTenths(); }
+
+  /* ---------- readout ---------- */
+  function drawReadout(){
+    var b = $("breakdown");
+    var bar = $("progress");
+
+    if(S.mode === "wo"){
+      var total = S.wo.length;
+      var done = doneCount();
+      $("total").textContent = total ? String(done) : "\u2014";
+      $("total-unit").textContent = total ? "of " + total : "to do";
+      bar.classList.remove("hidden");
+      bar.firstElementChild.style.width = total ? (done / total * 100) + "%" : "0%";
+      if(!total) b.textContent = "Nothing in today\u2019s list yet \u2014 pick from the library below.";
+      else if(done === total) b.textContent = "All done today. Checks clear when the date rolls over.";
+      else b.textContent = (total - done) + " to go \u00b7 checks clear when the date rolls over";
+      return;
+    }
+
+    bar.classList.add("hidden");
+    $("total").textContent = fmt(currentTenths());
+    $("total-unit").textContent = unitLabel();
+
+    if(S.mode === "kb"){
+      var n = S.kb[46] + S.kb[55] + S.kb[60];
+      var plates = kbTenths() - KB_FRAME;
+      b.innerHTML = fmt(KB_FRAME) + " frame" +
+        '<span class="sep">+</span>' + fmt(plates) + " in plates" +
+        '<span class="sep">&middot;</span>' + n + " of 6 on";
+    } else {
+      var side = bbPerSide();
+      var count = BB_SIZES.reduce(function(s, w){ return s + S.bb[w]; }, 0);
+      b.innerHTML = fmt(barTenths()) + " bar" +
+        '<span class="sep">+</span>' + fmt(side) + " a side" +
+        '<span class="sep">&middot;</span>' + count + (count === 1 ? " plate" : " plates") + " each end";
+    }
+  }
+
+  /* ---------- kettlebell drawing ---------- */
+  function drawKettlebell(){
+    var order = [46, 55, 60, 60, 55, 46];   // mirrored, the way it stacks on the post
+    var used = {46:0, 55:0, 60:0};
+    var mounted = [];
+    order.forEach(function(w){
+      if(used[w] < S.kb[w]){ used[w]++; mounted.push(w); }
+    });
+
+    var y = 258;
+    var svg = "";
+    mounted.forEach(function(w){
+      var h = KB_THICK[w];
+      y -= h;
+      svg += '<g class="kb-plate" data-size="' + w + '" role="button" tabindex="0" ' +
+             'aria-label="Take off the ' + (w / 10) + ' pound plate">' +
+             '<rect class="body" x="64" y="' + y + '" width="112" height="' + (h - 1.5) + '" rx="2" style="fill:' + KB_FILL[w] + '"/>' +
+             '<text x="120" y="' + (y + h / 2 + 3.2) + '" text-anchor="middle" ' +
+             'font-family="IBM Plex Mono, monospace" font-size="9" style="fill:var(--stamp)" ' +
+             'letter-spacing="0.5" pointer-events="none">' + (w / 10).toFixed(1) + '</text>' +
+             '</g>';
+    });
+    $("kb-stack").innerHTML = svg;
+    $("kb-hint").textContent = mounted.length ? "Tap a plate to take it off" : "Bare frame \u2014 add plates below";
+  }
+
+  /* ---------- barbell drawing ---------- */
+  function drawBarbell(){
+    var loaded = [];
+    BB_SIZES.forEach(function(w){ for(var i = 0; i < S.bb[w]; i++) loaded.push(w); });
+
+    function plateHTML(w){
+      return '<button type="button" class="bb-plate" data-size="' + w + '" ' +
+             'style="width:' + BB_THICK[w] + 'px;height:' + BB_DIA[w] + 'px;background:' + BB_FILL[w] + '" ' +
+             'aria-label="Pull one pair of ' + w + ' pound plates"></button>';
+    }
+    // Heaviest sits against the collar, so the outermost plate is drawn first on the left.
+    var outIn = loaded.slice().reverse().map(plateHTML).join("");
+    var inOut = loaded.map(plateHTML).join("");
+
+    var tip = loaded.length ? '<div class="bb-tip"></div>' : "";
+    $("bar-stage").innerHTML =
+      '<div class="bar-side left">' + tip + outIn + '<div class="bb-sleeve"></div></div>' +
+      '<div class="bb-shaft"></div>' +
+      '<div class="bar-side right"><div class="bb-sleeve"></div>' + inOut + tip + '</div>';
+
+    $("bb-hint").textContent = loaded.length
+      ? "Tap a plate to pull the pair"
+      : BARS[S.bar].name + " \u2014 " + fmt(barTenths()) + " " + unitLabel() + ", empty";
+  }
+
+  /* ---------- steppers ---------- */
+  function stepperRow(opts){
+    return '<div class="row">' +
+      '<div class="chip" style="background:' + opts.fill + ';align-self:stretch"></div>' +
+      '<div class="row-label"><span class="w">' + opts.weight + '</span>' +
+      '<span class="sub">' + opts.sub + '</span></div>' +
+      '<div class="stepper">' +
+        '<button type="button" data-act="dec" data-size="' + opts.size + '" ' +
+          (opts.count === 0 ? "disabled " : "") + 'aria-label="One fewer">&minus;</button>' +
+        '<span class="count' + (opts.count === 0 ? " zero" : "") + '">' + opts.count + '</span>' +
+        '<button type="button" data-act="inc" data-size="' + opts.size + '" ' +
+          (opts.atMax ? "disabled " : "") + 'aria-label="One more">+</button>' +
+      '</div></div>';
+  }
+
+  function drawKbRows(){
+    $("kb-rows").innerHTML = KB_SIZES.slice().reverse().map(function(w){
+      return stepperRow({
+        size:w, fill:KB_FILL[w], count:S.kb[w], atMax:S.kb[w] >= 2,
+        weight:fmt(w) + " " + unitLabel(),
+        sub:S.kb[w] + " of 2 on"
+      });
+    }).join("");
+  }
+
+  function drawBbRows(){
+    $("bb-rows").innerHTML = BB_SIZES.map(function(w){
+      return stepperRow({
+        size:w, fill:BB_FILL[w], count:S.bb[w], atMax:S.bb[w] >= 12,
+        weight:fmt(w * 10) + " " + unitLabel(),
+        sub:S.bb[w] ? "adds " + fmt(w * 10 * S.bb[w] * 2) : "per side"
+      });
+    }).join("");
+  }
+
+  /* ---------- every reachable kettlebell weight ---------- */
+  function kbCombos(){
+    var out = [];
+    for(var a = 0; a <= 2; a++){
+      for(var b = 0; b <= 2; b++){
+        for(var c = 0; c <= 2; c++){
+          out.push({t:KB_FRAME + 46 * a + 55 * b + 60 * c, a:a, b:b, c:c});
+        }
+      }
+    }
+    out.sort(function(x, y){ return x.t - y.t; });
+    return out;
+  }
+  var KB_COMBOS = kbCombos();
+
+  function drawKbGrid(){
+    var now = kbTenths();
+    $("kb-grid").innerHTML = KB_COMBOS.map(function(c){
+      return '<button type="button" data-t="' + c.t + '"' +
+             (c.t === now ? ' aria-current="true"' : "") + '>' + fmt(c.t) + '</button>';
+    }).join("");
+  }
+
+  /* ---------- barbell solver ---------- */
+  // Fewest plates per side. Greedy gets this wrong (60 -> 45+10+5 instead of 35+25),
+  // so walk it properly.
+  function fewestPlates(perSideLb){
+    var n = perSideLb / 5;
+    var dp = new Array(n + 1).fill(null);
+    dp[0] = [];
+    for(var i = 1; i <= n; i++){
+      for(var j = 0; j < BB_SIZES.length; j++){
+        var k = BB_SIZES[j] / 5;
+        if(i >= k && dp[i - k] && (dp[i] === null || dp[i - k].length + 1 < dp[i].length)){
+          dp[i] = dp[i - k].concat(BB_SIZES[j]);
+        }
+      }
+    }
+    return dp[n] || [];
+  }
+
+  function solve(){
+    var out = $("solve-out");
+    var want = toTenths($("target").value);
+    if(want === null){
+      out.textContent = "Type a weight and I\u2019ll work out the plates.";
+      return;
+    }
+    var bar = barTenths();
+    if(want < bar){
+      out.innerHTML = "That\u2019s under the bar itself \u2014 it already weighs <strong>" +
+                      fmt(bar) + " " + unitLabel() + "</strong> bare.";
+      return;
+    }
+    // Plates only come in pairs, so reachable totals step by 10 lb from the bar.
+    var k = Math.max(0, Math.round((want - bar) / 100));
+    var hit = bar + k * 100;
+    var plates = fewestPlates(k * 5);
+
+    BB_SIZES.forEach(function(w){ S.bb[w] = 0; });
+    plates.forEach(function(w){ S.bb[w]++; });
+
+    var line = plates.length
+      ? plates.slice().sort(function(a, b){ return b - a; })
+              .map(function(w){ return fmt(w * 10); }).join("  +  ") + "  per side"
+      : "bar only";
+    var note = (hit === want)
+      ? "Exactly <strong>" + fmt(hit) + " " + unitLabel() + "</strong>."
+      : "Closest you can build is <strong>" + fmt(hit) + " " + unitLabel() +
+        "</strong> \u2014 pairs only move the bar in " + fmt(100) + " " + unitLabel() + " steps.";
+
+    out.innerHTML = note + '<br><span class="load">' + line + "</span>";
+    render();
+  }
+
+  /* ---------- workout ---------- */
+  function drawWorkout(){
+    if(!S.wo.length){
+      $("wo-list").innerHTML =
+        '<li class="wo-empty">No exercises yet.<br>Tap one in the library below to add it.</li>';
+      return;
+    }
+    $("wo-list").innerHTML = S.wo.map(function(id){
+      var ex = exById(id);
+      if(!ex) return "";
+      var done = !!S.done[id];
+      return '<li class="wo-item' + (done ? " done" : "") + '" data-id="' + id + '" ' +
+             'role="checkbox" aria-checked="' + done + '" tabindex="0">' +
+             '<span class="box"><svg viewBox="0 0 14 14" aria-hidden="true">' +
+             '<path d="M2 7.4 L5.4 10.8 L12 3.4"/></svg></span>' +
+             '<span class="wo-name">' + esc(ex.name) + '</span>' +
+             '<button type="button" class="x" data-drop="' + id + '" ' +
+             'aria-label="Remove ' + esc(ex.name) + ' from today\u2019s list">&times;</button>' +
+             '</li>';
+    }).join("");
+  }
+
+  function drawLibrary(){
+    if(!S.lib.length){
+      $("lib-list").innerHTML = '<p class="wo-empty">Library is empty. Add one above.</p>';
+      return;
+    }
+    var inWo = {};
+    S.wo.forEach(function(id){ inWo[id] = true; });
+    $("lib-list").innerHTML = S.lib.map(function(ex){
+      var on = !!inWo[ex.id];
+      return '<span class="lib-chip' + (on ? " in" : "") + '">' +
+        '<button type="button" class="pick" data-pick="' + ex.id + '" aria-pressed="' + on + '">' +
+        '<span class="mark" aria-hidden="true">' + (on ? "&#10003;" : "+") + '</span>' +
+        esc(ex.name) + '</button>' +
+        '<button type="button" class="del" data-del="' + ex.id + '" ' +
+        'aria-label="Delete ' + esc(ex.name) + ' from the library">&times;</button>' +
+        '</span>';
+    }).join("");
+  }
+
+  function addExercise(){
+    var input = $("ex-new");
+    var name = input.value.trim().replace(/\s+/g, " ");
+    if(!name) return;
+    input.value = "";
+    var dup = S.lib.filter(function(e){
+      return e.name.toLowerCase() === name.toLowerCase();
+    })[0];
+    var id = dup ? dup.id : S.nextId++;
+    if(!dup) S.lib.push({id:id, name:name});
+    if(S.wo.indexOf(id) < 0) S.wo.push(id);   // a freshly typed exercise goes straight into today
+    render();
+  }
+
+  /* ---------- spec footer ---------- */
+  function drawSpec(){
+    if(S.mode === "wo"){
+      $("spec").innerHTML =
+        "<b>Daily checklist</b> &middot; one set of each, tick them off as you go<br>" +
+        "Checks clear on their own when the date changes. Your list and library stay put.";
+    } else if(S.mode === "kb"){
+      $("spec").innerHTML =
+        "<b>Your kettlebell</b> &middot; 7.8 lb steel frame, six plates: 4.6 &times;2, 5.5 &times;2, 6.0 &times;2<br>" +
+        "Range 7.8 &ndash; 40.0 lb across 27 settings. Widest gaps: 30.8 &rarr; 34.0 and 35.4 &rarr; 40.0.";
+    } else {
+      $("spec").innerHTML =
+        "<b>Plate pairs</b> &middot; every plate goes on twice, so the bar climbs in 10 lb steps<br>" +
+        "Nothing between 45 and 55 &mdash; you’d need 2.5 lb plates for finer jumps.";
+    }
+  }
+
+  /* ---------- render + persist ---------- */
+  function render(){
+    rollDay();
+    $("pane-kb").classList.toggle("hidden", S.mode !== "kb");
+    $("pane-bb").classList.toggle("hidden", S.mode !== "bb");
+    $("pane-wo").classList.toggle("hidden", S.mode !== "wo");
+    $("unit-seg").classList.toggle("hidden", S.mode === "wo");
+    $("m-kb").setAttribute("aria-pressed", S.mode === "kb");
+    $("m-bb").setAttribute("aria-pressed", S.mode === "bb");
+    $("m-wo").setAttribute("aria-pressed", S.mode === "wo");
+    $("u-lb").setAttribute("aria-pressed", S.unit === "lb");
+    $("u-kg").setAttribute("aria-pressed", S.unit === "kg");
+    $("b-oly").setAttribute("aria-pressed", S.bar === "oly");
+    $("b-wom").setAttribute("aria-pressed", S.bar === "wom");
+    $("b-trap").setAttribute("aria-pressed", S.bar === "trap");
+    $("trap-row").classList.toggle("hidden", S.bar !== "trap");
+    $("trap-unit").textContent = unitLabel();
+    $("target-unit").textContent = unitLabel();
+    $("trap-w").value = S.unit === "kg" ? (S.trap / 10 * LB_PER_KG).toFixed(1) : String(S.trap / 10);
+
+    drawReadout();
+    drawSpec();
+    if(S.mode === "kb"){ drawKettlebell(); drawKbRows(); drawKbGrid(); }
+    else if(S.mode === "bb"){ drawBarbell(); drawBbRows(); }
+    else { drawWorkout(); drawLibrary(); }
+    save();
+  }
+
+  function save(){
+    try{ localStorage.setItem("platemath.v1", JSON.stringify(S)); }catch(e){}
+  }
+  // returns true if storage already held an exercise library
+  function load(){
+    var hadLib = false;
+    try{
+      var raw = localStorage.getItem("platemath.v1");
+      if(!raw) return false;
+      var got = JSON.parse(raw);
+      if(got && typeof got === "object"){
+        if(got.mode === "kb" || got.mode === "bb" || got.mode === "wo") S.mode = got.mode;
+        if(got.unit === "lb" || got.unit === "kg") S.unit = got.unit;
+        if(BARS[got.bar]) S.bar = got.bar;
+        if(typeof got.trap === "number" && got.trap > 0) S.trap = got.trap;
+        KB_SIZES.forEach(function(w){
+          var n = got.kb && got.kb[w];
+          if(typeof n === "number") S.kb[w] = Math.max(0, Math.min(2, Math.round(n)));
+        });
+        BB_SIZES.forEach(function(w){
+          var n = got.bb && got.bb[w];
+          if(typeof n === "number") S.bb[w] = Math.max(0, Math.min(12, Math.round(n)));
+        });
+        if(typeof got.nextId === "number" && got.nextId > 0) S.nextId = Math.floor(got.nextId);
+        if(Array.isArray(got.lib)){
+          hadLib = true;
+          S.lib = got.lib
+            .filter(function(e){ return e && typeof e.id === "number" && typeof e.name === "string"; })
+            .map(function(e){ return {id:Math.floor(e.id), name:String(e.name).slice(0, 60)}; });
+        }
+        if(Array.isArray(got.wo)) S.wo = got.wo.filter(function(id){ return typeof id === "number"; });
+        if(got.done && typeof got.done === "object") S.done = got.done;
+        if(typeof got.doneDate === "string") S.doneDate = got.doneDate;
+      }
+    }catch(e){}
+
+    // keep ids unique and drop workout entries whose exercise no longer exists
+    var ids = {};
+    S.lib.forEach(function(e){
+      ids[e.id] = true;
+      if(e.id >= S.nextId) S.nextId = e.id + 1;
+    });
+    S.wo = S.wo.filter(function(id){ return ids[id]; });
+    return hadLib;
+  }
+
+  /* ---------- wiring ---------- */
+  $("m-kb").onclick = function(){ S.mode = "kb"; render(); };
+  $("m-bb").onclick = function(){ S.mode = "bb"; render(); };
+  $("m-wo").onclick = function(){ S.mode = "wo"; render(); };
+  $("u-lb").onclick = function(){ S.unit = "lb"; render(); };
+  $("u-kg").onclick = function(){ S.unit = "kg"; render(); };
+  $("b-oly").onclick = function(){ S.bar = "oly"; render(); };
+  $("b-wom").onclick = function(){ S.bar = "wom"; render(); };
+  $("b-trap").onclick = function(){ S.bar = "trap"; render(); };
+
+  $("trap-w").oninput = function(){
+    var t = toTenths(this.value);
+    if(t !== null && t > 0){ S.trap = t; drawReadout(); drawBarbell(); save(); }
+  };
+
+  $("kb-reset").onclick = function(){ KB_SIZES.forEach(function(w){ S.kb[w] = 0; }); render(); };
+  $("bb-reset").onclick = function(){ BB_SIZES.forEach(function(w){ S.bb[w] = 0; }); render(); };
+
+  function toggleDone(id){
+    if(S.done[id]) delete S.done[id]; else S.done[id] = true;
+    render();
+  }
+
+  $("ex-add").onclick = addExercise;
+  $("ex-new").addEventListener("keydown", function(e){ if(e.key === "Enter") addExercise(); });
+  $("wo-reset").onclick = function(){ S.done = {}; render(); };
+
+  $("wo-list").addEventListener("click", function(e){
+    var drop = e.target.closest("button[data-drop]");
+    if(drop){
+      var did = Number(drop.dataset.drop);
+      S.wo = S.wo.filter(function(x){ return x !== did; });
+      render();
+      return;
+    }
+    var item = e.target.closest(".wo-item");
+    if(item) toggleDone(Number(item.dataset.id));
+  });
+  $("wo-list").addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " ") return;
+    var item = e.target.closest(".wo-item");
+    if(!item) return;
+    e.preventDefault();
+    toggleDone(Number(item.dataset.id));
+  });
+
+  $("lib-list").addEventListener("click", function(e){
+    var del = e.target.closest("button[data-del]");
+    if(del){
+      var did = Number(del.dataset.del);
+      S.lib = S.lib.filter(function(x){ return x.id !== did; });
+      S.wo = S.wo.filter(function(x){ return x !== did; });
+      delete S.done[did];
+      render();
+      return;
+    }
+    var pick = e.target.closest("button[data-pick]");
+    if(!pick) return;
+    var pid = Number(pick.dataset.pick);
+    var i = S.wo.indexOf(pid);
+    if(i < 0) S.wo.push(pid); else S.wo.splice(i, 1);
+    render();
+  });
+
+  function stepHandler(store, max){
+    return function(e){
+      var btn = e.target.closest("button[data-act]");
+      if(!btn) return;
+      var w = Number(btn.dataset.size);
+      if(btn.dataset.act === "inc") store[w] = Math.min(max, store[w] + 1);
+      else store[w] = Math.max(0, store[w] - 1);
+      render();
+    };
+  }
+  $("kb-rows").addEventListener("click", stepHandler(S.kb, 2));
+  $("bb-rows").addEventListener("click", stepHandler(S.bb, 12));
+
+  $("kb-stack").addEventListener("click", function(e){
+    var g = e.target.closest(".kb-plate");
+    if(!g) return;
+    var w = Number(g.dataset.size);
+    S.kb[w] = Math.max(0, S.kb[w] - 1);
+    render();
+  });
+  $("kb-stack").addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " ") return;
+    var g = e.target.closest(".kb-plate");
+    if(!g) return;
+    e.preventDefault();
+    var w = Number(g.dataset.size);
+    S.kb[w] = Math.max(0, S.kb[w] - 1);
+    render();
+  });
+
+  $("bar-stage").addEventListener("click", function(e){
+    var p = e.target.closest(".bb-plate");
+    if(!p) return;
+    var w = Number(p.dataset.size);
+    S.bb[w] = Math.max(0, S.bb[w] - 1);
+    render();
+  });
+
+  $("kb-grid").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-t]");
+    if(!b) return;
+    var t = Number(b.dataset.t);
+    var combo = KB_COMBOS.filter(function(c){ return c.t === t; })[0];
+    if(!combo) return;
+    S.kb[46] = combo.a; S.kb[55] = combo.b; S.kb[60] = combo.c;
+    render();
+  });
+
+  $("solve").onclick = solve;
+  $("target").addEventListener("keydown", function(e){ if(e.key === "Enter") solve(); });
+
+  if(!load()) seedLib();
+  render();
+})();
+</script>
